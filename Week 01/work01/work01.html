@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title></title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<style>
+			.container {
+				display: inline-block;
+			}
+
+			.container > .wrapper {
+				margin: 10px;
+				padding: 8px;
+				background: #d2c397;
+			}
+
+			.container > .wrapper > .row {
+				display: block;
+			}
+
+			.container > .wrapper > .row > .cell {
+				display: inline-block;
+				height: 30px;
+				width: 30px;
+				font-size: 18px;
+				text-align: center;
+				vertical-align: middle;
+				line-height: 30px;
+				position: relative;
+			}
+
+			.row > .cell:before {
+				content: "";
+				position: absolute;
+				z-index: 2;
+				left: 0;
+				right: 0;
+				top: 15px;
+				height: 1px;
+				background: #000;
+			}
+
+			.row > .cell:after {
+				content: "";
+				position: absolute;
+				z-index: 2;
+				left: 15px;
+				top: 0;
+				bottom: 0;
+				width: 1px;
+				background: #000;
+			}
+
+			.row > .cell.left:before {
+				left: 15px;
+				right: 0;
+				top: 15px;
+				height: 1px;
+			}
+
+			.row > .cell.left:after {
+				left: 15px;
+				top: 0;
+				bottom: 0;
+				width: 1px;
+			}
+
+			.row > .cell.right:before {
+				left: 0;
+				right: 15px;
+				top: 15px;
+				height: 1px;
+			}
+
+			.row > .cell.right:after {
+				left: 15px;
+				top: 0;
+				bottom: 0;
+				width: 1px;
+			}
+
+			.row > .cell.top:before {
+				left: 0;
+				right: 0;
+				top: 15px;
+				height: 1px;
+			}
+
+			.row > .cell.top:after {
+				left: 15px;
+				top: 15px;
+				bottom: 0;
+				width: 1px;
+			}
+
+			.row > .cell.bottom:before {
+				left: 0;
+				right: 0;
+				top: 15px;
+				height: 1px;
+			}
+
+			.row > .cell.bottom:after {
+				left: 15px;
+				bottom: 15px;
+				width: 1px;
+			}
+
+			.row > .cell.top.left:before {
+				left: 15px;
+				right: 0;
+				top: 15px;
+				height: 1px;
+			}
+
+			.row > .cell.top.right:after {
+				left: 15px;
+				top: 15px;
+				bottom: 0;
+				width: 1px;
+			}
+
+			.row > .cell.top.right:before {
+				left: 0;
+				right: 15px;
+				top: 15px;
+				height: 1px;
+			}
+
+			.row > .cell.top.left:after {
+				left: 15px;
+				top: 15px;
+				bottom: 0;
+				width: 1px;
+			}
+
+			.row > .cell.bottom.left:before {
+				left: 15px;
+				right: 0;
+				top: 15px;
+				height: 1px;
+			}
+
+			.row > .cell.bottom.left:after {
+				left: 15px;
+				bottom: 15px;
+				width: 1px;
+			}
+
+			.row > .cell.bottom.right:before {
+				left: 0;
+				right: 15px;
+				top: 15px;
+				height: 1px;
+			}
+
+			.row > .cell.bottom.left:after {
+				left: 15px;
+				bottom: 15px;
+				width: 1px;
+			}
+
+			.role {
+				display: inline-block;
+			}
+
+			.role > button {
+				margin: 4px;
+				background: whitesmoke;
+				border: 1px #fefefe solid;
+				outline: none;
+                height: 30px;
+                width: 60px;
+                position: relative;
+			}
+
+            .role > button > label {
+                position: absolute;
+                left: 8px;
+                top: calc(50% - 6px);
+            }
+
+            .role > button > span {
+                position: absolute;
+                right: 16px;
+                top: calc(50%);
+			}
+
+			.role > button.active {
+				background: sandybrown;
+			}
+
+			.white-chess {
+				display: inline-block;
+				width: 24px;
+				height: 24px;
+				border-radius: 50%;
+				background: radial-gradient(15px 15px at 15px 15px, #fff, #e2e2e2);
+				box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+				position: absolute;
+				top: calc(50% - 12px);
+				left: calc(50% - 12px);
+				z-index: 10;
+			}
+
+			.black-chess {
+				z-index: 10;
+				display: inline-block;
+				width: 24px;
+				height: 24px;
+				position: relative;
+				border-radius: 50%;
+				background: #333;
+				position: absolute;
+				top: calc(50% - 12px);
+				left: calc(50% - 12px);
+				z-index: 10;
+				box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+			}
+			.black-chess:after {
+				content: "";
+				display: block;
+				width: 10px;
+				height: 5px;
+				border-radius: 50%;
+				position: absolute;
+				top: 5px;
+				left: 2px;
+				transform: rotate(-45deg);
+				background: radial-gradient(20px 10px at 10px 5px, #fff, #aaa);
+				box-shadow: 0 0 8px #fff;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container"></div>
+		<div class="role">
+			<input type="radio" name="mode" onclick="setMode(this.value)" value="TP" />双人<br />
+			<input type="radio" name="mode" checked onclick="setMode(this.value)" value="TT" />人机<br />
+			<button data-role="a" type="button">
+				<label>A:</label>
+				<span><div class="white-chess"></div></span></button
+			><br />
+			<button data-role="b" type="button">
+				<label>B:</label>
+                    <span><div class="black-chess"></div></span>
+                </div>
+			</button>
+		</div>
+	</body>
+	<script src="./chess-01-rule.js"></script>
+	<script src="../render.js"></script>
+	<script>
+        window.onload = () => {
+            initGame(4, 4)
+        }
+	</script>
+</html>
