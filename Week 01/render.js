@@ -279,7 +279,7 @@
 		MAX_ROW = row;
 		MAX_COLUMN = column;
 		chaquerMatrix = generateChaquer(MAX_ROW, MAX_COLUMN);
-		currentMode = MODE_TT;
+		currentMode = mode;
 		renderChequer(chaquerMatrix);
 		addCellClickListener();
 		addModeClickListener();
