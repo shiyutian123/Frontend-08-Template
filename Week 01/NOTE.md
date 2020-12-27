@@ -11,3 +11,6 @@
     2. 深度学习AI，训练模型 + 训练时间 = 逐步优化的最优解，了解前端什么学习框架 deeplearn.js 和 Keras.js
 
 > 扩展自己的知识面
+
+## 前端思维导图
+![cDVZAl34KemTLzh](https://i.loli.net/2020/12/27/cDVZAl34KemTLzh.png)

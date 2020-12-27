@@ -1,0 +1,192 @@
+<!--
+ * @Author: Devin
+ * @Date: 2020-12-27 07:47:02
+ * @LastEditTime: 2020-12-27 09:32:45
+ * @LastEditors: Devin
+ * @Description: 
+ * @email: das.devin@outlook.com
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        .container,
+        .option {
+            display: flex;
+            width: 100%;
+            margin: 8px;
+        }
+
+        .container>div {
+            width: 60px;
+            height: 60px;
+            background: gray;
+            border-radius: 50%;
+            margin: 8px;
+        }
+
+        .light.yellow {
+            background: yellow;
+        }
+
+        .light.red {
+            background: red;
+        }
+
+        .light.green {
+            background: green;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div data-mark="light" class="green"></div>
+        <div data-mark="light" class="yellow"></div>
+        <div data-mark="light" class="red"></div>
+    </div>
+    <div class="option">
+        <button id="start">执行</button>
+        <button id="pause">暂停/恢复</button>
+        <button id="stop">停止</button>
+        <button id="next">下一步(需要在停止状态)</button>
+    </div>
+</body>
+<script>
+    const changeLight = (type) => {
+        const lights = document.querySelectorAll('[data-mark="light"]');
+        lights.forEach((light) => {
+            light.classList.remove("light");
+            if (Array.from(light.classList).includes(type)) {
+                light.classList.add("light");
+            }
+        });
+    };
+
+    const changeRed = () => {
+        changeLight("red");
+    };
+
+    const changeGreen = () => {
+        changeLight("green");
+    };
+
+    const changeYellow = () => {
+        changeLight("yellow");
+    };
+
+    /**
+     * 方式一
+     */
+    // const startPlay = async function () {
+    //     while (true) {
+    //         changeGreen();
+    //         await sleep(10000)
+    //         changeYellow();
+    //         await sleep(5000);
+    //         changeRed();
+    //         await sleep(2000);
+    //     }
+    // }
+
+    const lightList = [
+        {
+            light: "green",
+            time: 10000,
+        },
+        {
+            light: "yellow",
+            time: 5000,
+        },
+        {
+            light: "red",
+            time: 2000,
+        },
+    ];
+
+    let index = 0;
+    let loop = false;
+    let pauseGen = false;
+    let stopGen = true;
+
+    const sleep = function (time) {
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, time);
+        });
+    };
+
+    const generateLight = function* (lightList) {
+        while (true) {
+            if (index === lightList.length) {
+                index = 0;
+            }
+            if (stopGen) {
+                return false
+            }
+            let light = {
+                pause: true,
+                time: 50
+            }
+            if (!pauseGen) {
+                light = lightList[index];
+                index++;
+            }
+            yield light
+        }
+    };
+
+    let lightGen = generateLight(lightList);
+
+    const startPlay = async function () {
+        stopGen = false
+        if (!loop) {
+            while (true) {
+                const light = lightGen.next();
+                debugger
+                if (light.done) {
+                    loop = false
+                    return
+                }
+                if (!light.value.pause) {
+                    changeLight(light.value.light);
+                }
+                await sleep(light.value.time);
+            }
+        }
+        loop = true;
+    };
+
+    const pausePlay = function () {
+        if (!stopGen) {
+            pauseGen = !pauseGen
+        }
+    };
+
+    const stopPlay = function () {
+        stopGen = true
+        index = 0;
+        changeLight('')
+        lightGen = generateLight(lightList);
+    };
+
+    const nextPlay = function () {
+        if (stopGen) {
+            if (index === lightList.length) {
+                index = 0
+            }
+            changeLight(lightList[index].light)
+            index++;
+        }
+    };
+
+    document.querySelector("#start").addEventListener("click", startPlay);
+    document.querySelector("#pause").addEventListener("click", pausePlay);
+    document.querySelector("#stop").addEventListener("click", stopPlay);
+    document.querySelector("#next").addEventListener("click", nextPlay);
+</script>
+
+</html>
