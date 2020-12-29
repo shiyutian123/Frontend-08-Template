@@ -208,9 +208,9 @@
 			setTimeout(() => {
 				if (aiExector) {
 					if (getMaxCount(calcPointNum(ROLE_A)) > getMaxCount(calcPointNum(ROLE_B))) {
-						aiExector(calcPointNum(ROLE_A), aiExecutePointEnter, MAX_COLUMN, MAX_ROW);
+						aiExector(calcPointNum(ROLE_A), getMaxCount, chaquerMatrix, aiExecutePointEnter, MAX_COLUMN, MAX_ROW);
 					} else {
-						aiExector(calcPointNum(ROLE_B));
+						aiExector(calcPointNum(ROLE_B), getMaxCount, chaquerMatrix, aiExecutePointEnter, MAX_COLUMN, MAX_ROW);
 					}
 				} else {
 					console.warn("没有注册AI执行器");

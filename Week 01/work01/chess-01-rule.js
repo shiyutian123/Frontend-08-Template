@@ -55,7 +55,7 @@
 	/**
 	 * AI 优先保证不输，然后争取赢
 	 */
-	function aiExector(roleCalc, aiExecutePointEnter, MAX_COLUMN, MAX_ROW) {
+	function aiExector(roleCalc, getMaxCount, chaquerMatrix, aiExecutePointEnter, MAX_COLUMN, MAX_ROW) {
 		// 判断ROLE_A的最大路径，若存在，则在最大路径上设置点
 		const { x, xCount, y, yCount, minorDiagonal, minorCount, mainDiagonal, mainCount, count } = roleCalc;
 		const maxCount = getMaxCount(roleCalc);
