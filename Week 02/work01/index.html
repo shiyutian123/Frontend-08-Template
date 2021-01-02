@@ -1,0 +1,244 @@
+<!--
+ * @Author: Devin
+ * @Date: 2021-01-01 22:28:53
+ * @LastEditTime: 2021-01-02 22:31:41
+ * @LastEditors: Devin
+ * @Description: 
+ * @email: das.devin@outlook.com
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<title></title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<style>
+			.cell {
+				line-height: 7px;
+				width: 6px;
+				height: 6px;
+				display: inline-block;
+				background-color: lightgray;
+				border-bottom: solid 1px white;
+				border-right: solid 1px white;
+				vertical-align: middle;
+				color: white;
+			}
+
+			.container {
+				width: 701px;
+				font-size: 0px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container"></div>
+		<button onclick="localStorage.setItem('map', JSON.stringify(map))">Save</button>
+	</body>
+	<script>
+		let map = localStorage.getItem("map") ? JSON.parse(localStorage.getItem("map")) : new Array(10000).fill(0);
+
+		let container = document.querySelector(".container");
+
+		let mousedown = false;
+
+		let clear = false;
+
+		let pathMap;
+
+		class Sorted {
+			constructor(data, compare) {
+				this.data = Array.isArray(data) ? [...data] : [];
+				this.compare = compare || ((a, b) => a - b);
+				this.status = "X";
+			}
+
+			take() {
+				if (!this.data.length) {
+					return;
+				}
+
+				let min = this.data[0];
+				let index = 0;
+				for (let i = 0; i < this.data.length; i++) {
+					if (this.compare(this.data[i], min) < 0 && this.data[i][0] >= this.data[i][1] && this.status === "X") {
+						min = this.data[i];
+						index = i;
+					} else if (this.compare(this.data[i], min) < 0 && this.data[i][0] < this.data[i][1] && this.status === "Y") {
+						min = this.data[i];
+						index = i;
+					}
+				}
+				this.data[index] = this.data[this.data.length - 1];
+				this.data.pop();
+
+				if (min[0] >= min[1]) {
+					this.status = "Y";
+				} else {
+					this.status = "X";
+                }
+				return min;
+			}
+
+			push(value) {
+				this.data.push(value);
+			}
+
+			length() {
+				return this.data.length;
+			}
+		}
+
+		for (let y = 0; y < 100; y++) {
+			for (let x = 0; x < 100; x++) {
+				let cell = document.createElement("cell");
+				cell.setAttribute("data-x", x);
+				cell.setAttribute("data-y", y);
+
+				if (map[y * 100 + x] === 1) {
+					cell.style.backgroundColor = "black";
+				}
+				cell.classList.add("cell");
+
+				container.appendChild(cell);
+			}
+		}
+
+		container.addEventListener("mouseover", (event) => {
+			mousedown = event.which === 1;
+			clear = event.which === 3;
+			if (mousedown || clear) {
+				if (event.target && event.target.getAttribute("data-x")) {
+					const x = event.target.getAttribute("data-x");
+					const y = event.target.getAttribute("data-y");
+					if (clear) {
+						map[parseInt(y * 100) + parseInt(x)] = 0;
+						event.target.style.backgroundColor = "";
+					} else {
+						map[parseInt(y * 100) + parseInt(x)] = 1;
+						event.target.style.backgroundColor = "black";
+					}
+				}
+			}
+		});
+
+		function sleep(timeout) {
+			return new Promise((resolve, reject) => {
+				setTimeout(() => {
+					resolve();
+				}, timeout);
+			});
+		}
+
+		findPath = async function (map, start, end) {
+			pathMap = Object.create(map);
+			const sorted = new Sorted([], (a, b) => {
+				return distance(a) - distance(b);
+			});
+
+			function getPointLevel(pathMap, x, y) {
+				const point = pathMap[y * 100 + x];
+				let level = 10000;
+				if (point && Array.isArray(point)) {
+					level = point[2] >>> 0;
+				}
+				return level;
+			}
+
+			function distance(point) {
+				return (point[0] - end[0]) ** 2 + (point[1] - end[1]) ** 2;
+
+				/**
+		               *  优化欧式距离计算 为 曼哈顿距离
+		               *
+		               *  曼哈顿距离
+		                  上图中的红线表示的是两个点之间的曼哈顿距离
+		                  表示的是标准坐标系上的两个点的绝对轴距之和（d = |x1 - x2| + |y1 - y2|）
+
+		                  欧式距离（欧几里得距离）
+		                  上图中的绿线表示的是欧式距离
+		                  其代表的是两个点之间的直线距离（通过勾股定理计算出来的）。
+		               */
+				// return Math.abs(point[0] - end[0]) + Math.abs(point[1] - end[1]);
+			}
+
+			async function insert(x, y, pre) {
+				if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+					return;
+				} else if (pathMap[y * 100 + x]) {
+					return;
+				} else {
+					pathMap[y * 100 + x] = pre;
+					sorted.push([x, y, pre && pre[2] >>> 0]);
+					await sleep(10);
+					container.children[y * 100 + x].style.backgroundColor = "green";
+					// container.children[y * 100 + x].innerHTML = pre && pre[2] >>> 0;
+				}
+			}
+
+			insert(start[0], start[1]);
+
+			while (sorted.length) {
+				const [x, y, level] = sorted.take();
+
+				// insert(x + 1, y + 1, [x, y]);
+				if (x === end[0] && y === end[1]) {
+					let pre = pathMap[x + y * 100];
+					container.children[pre[1] * 100 + pre[0]].style.backgroundColor = "purple";
+					const path = [];
+					while (pre[0] !== start[0] || pre[1] !== start[1]) {
+						path.push[pre];
+						await sleep(10);
+						pre = pathMap[pre[0] + pre[1] * 100];
+						container.children[pre[1] * 100 + pre[0]].style.backgroundColor = "purple";
+					}
+
+					return path;
+				}
+
+				// insert(x - 1, y - 1, [x, y]);
+				await insert(x, y - 1, [x, y, (level >>> 0) + 1]);
+				// insert(x + 1, y - 1, [x, y]);
+				await insert(x - 1, y, [x, y, (level >>> 0) + 1]);
+				await insert(x + 1, y, [x, y, (level >>> 0) + 1]);
+				// insert(x - 1, y + 1, [x, y]);
+				await insert(x, y + 1, [x, y, (level >>> 0) + 1]);
+			}
+		};
+
+		container.addEventListener("contextmenu", (event) => {
+			event.preventDefault();
+		});
+
+		// 验证为什么线条不完整，是mouse事件的问题，还是动态修改DOM导致的
+		// container.addEventListener("mouseup", (event) => {
+		// 	map.forEach((status, index) => {
+		//         if (index >= 10000) {
+		//             return;
+		//         }
+		// 		const x = index % 100;
+		//         const y = parseInt(index / 100);
+
+		//         if (status === 1) {
+		//             console.log(status, x, y)
+		//         }
+		// 		if (status === 1) {
+		//             debugger
+		// 			try {
+		// 				const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+		// 				cell.style.backgroundColor = "black";
+		// 			} catch (error) {
+		// 				console.error(index, x, y);
+		// 			}
+		// 		} else if (status === 0) {
+		// 			try {
+		// 				const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+		// 				cell.style.backgroundColor = "";
+		// 			} catch (error) {
+		// 				console.error(index, x, y);
+		// 			}
+		// 		}
+		// 	});
+		// });
+	</script>
+</html>
