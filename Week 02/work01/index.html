@@ -1,7 +1,7 @@
 <!--
  * @Author: Devin
  * @Date: 2021-01-01 22:28:53
- * @LastEditTime: 2021-01-02 22:31:41
+ * @LastEditTime: 2021-01-03 21:37:31
  * @LastEditors: Devin
  * @Description: 
  * @email: das.devin@outlook.com
@@ -46,11 +46,102 @@
 
 		let pathMap;
 
+		class BinaryHeap {
+			constructor(arr = [], compare) {
+				this.data = arr;
+				this.compare = compare || ((a, b) => a - b);
+				//heapify方式创建堆结构
+				for (let i = this.parent(arr.length - 1); i >= 0; i--) {
+					this.siftDown(i);
+				}
+			}
+
+			isEmpty() {
+				return !this.data.length;
+			}
+			//父索引
+			parent(index) {
+				if (index === 0) {
+					throw new Error(`'index-0 doesn't not have parent `);
+				}
+				return ((index - 1) / 2) | 0;
+				//这是索引从0开始的情况，如果从1开始可以直接index/2向下取整即可
+			}
+			leftChild(index) {
+				return index * 2 + 1;
+			}
+			rightChild(index) {
+				return index * 2 + 2;
+			}
+
+			push(element) {
+				this.data.push(element);
+				this.siftUp(this.data.length - 1); //将最后一个元素进行上浮操作
+			}
+
+			findMax() {
+				if (this.data.length === 0) {
+					//越界判断
+					throw new Error("is empty");
+				}
+				return this.data[0]; //因为是最大堆所以找数组第一个元素即可
+			}
+
+			take() {
+				const ret = this.findMax();
+				this.swap(this.data, 0, this.data.length - 1);
+				this.data.pop();
+				this.siftDown(0); //下沉操作
+				return ret;
+			}
+
+			//上浮
+			siftUp(index) {
+				//只要元素没有上浮到最顶层并且父元素比当前小就继续上浮(堆的性质：
+				//最大堆的父节点应该比左右两个结点都要大
+
+				while (index > 0 && this.compare(this.data[this.parent(index)], this.data[index]) > 0) {
+					//交换数组中位置
+					this.swap(this.data, index, this.parent(index));
+					//是不是依然不满足堆的性质
+					index = this.parent(index);
+				}
+			}
+
+			//下沉
+			siftDown(index) {
+				//极端情况：当左孩子索引小于数组长度时代表绝对没有右孩子，是叶子结点
+				while (this.leftChild(index) < this.data.length) {
+					let j = this.leftChild(index);
+					if (j + 1 < this.data.length && this.compare(this.data[j + 1], this.data[j]) < 0) {
+						j = this.rightChild(index);
+					}
+					//data[j]是左右孩子中最大的值
+					if (this.compare(this.data[index], this.data[j]) < 0) {
+						break; //满足了堆的性质直接跳出
+					} else {
+						this.swap(this.data, index, j); //否则继续交换
+						index = j;
+					}
+				}
+			}
+			//交换方法
+			swap(array, i, j) {
+				if (i < 0 || i >= this.data.length || j < 0 || j >= this.data.length) {
+					throw new Error("索引越界");
+				}
+				[array[i], array[j]] = [array[j], array[i]];
+			}
+
+			get length() {
+				return this.data.length;
+			}
+		}
+
 		class Sorted {
 			constructor(data, compare) {
 				this.data = Array.isArray(data) ? [...data] : [];
 				this.compare = compare || ((a, b) => a - b);
-				this.status = "X";
 			}
 
 			take() {
@@ -61,22 +152,13 @@
 				let min = this.data[0];
 				let index = 0;
 				for (let i = 0; i < this.data.length; i++) {
-					if (this.compare(this.data[i], min) < 0 && this.data[i][0] >= this.data[i][1] && this.status === "X") {
-						min = this.data[i];
-						index = i;
-					} else if (this.compare(this.data[i], min) < 0 && this.data[i][0] < this.data[i][1] && this.status === "Y") {
+					if (this.compare(this.data[i], min) < 0) {
 						min = this.data[i];
 						index = i;
 					}
 				}
 				this.data[index] = this.data[this.data.length - 1];
 				this.data.pop();
-
-				if (min[0] >= min[1]) {
-					this.status = "Y";
-				} else {
-					this.status = "X";
-                }
 				return min;
 			}
 
@@ -84,7 +166,7 @@
 				this.data.push(value);
 			}
 
-			length() {
+			get length() {
 				return this.data.length;
 			}
 		}
@@ -132,9 +214,12 @@
 
 		findPath = async function (map, start, end) {
 			pathMap = Object.create(map);
-			const sorted = new Sorted([], (a, b) => {
+			const sorted = new BinaryHeap([], (a, b) => {
 				return distance(a) - distance(b);
 			});
+			// const sorted = new Sorted([], (a, b) => {
+			// 	return distance(a) - distance(b);
+			// });
 
 			function getPointLevel(pathMap, x, y) {
 				const point = pathMap[y * 100 + x];
@@ -149,16 +234,16 @@
 				return (point[0] - end[0]) ** 2 + (point[1] - end[1]) ** 2;
 
 				/**
-		               *  优化欧式距离计算 为 曼哈顿距离
-		               *
-		               *  曼哈顿距离
-		                  上图中的红线表示的是两个点之间的曼哈顿距离
-		                  表示的是标准坐标系上的两个点的绝对轴距之和（d = |x1 - x2| + |y1 - y2|）
+						 *  优化欧式距离计算 为 曼哈顿距离
+						 *
+						 *  曼哈顿距离
+							 上图中的红线表示的是两个点之间的曼哈顿距离
+							表示的是标准坐标系上的两个点的绝对轴距之和（d = |x1 - x2| + |y1 - y2|）
 
-		                  欧式距离（欧几里得距离）
-		                  上图中的绿线表示的是欧式距离
-		                  其代表的是两个点之间的直线距离（通过勾股定理计算出来的）。
-		               */
+							欧式距离（欧几里得距离）
+							上图中的绿线表示的是欧式距离
+							其代表的是两个点之间的直线距离（通过勾股定理计算出来的）。
+						*/
 				// return Math.abs(point[0] - end[0]) + Math.abs(point[1] - end[1]);
 			}
 
@@ -179,7 +264,10 @@
 			insert(start[0], start[1]);
 
 			while (sorted.length) {
-				const [x, y, level] = sorted.take();
+				const sortedTake = sorted.take();
+				const x = sortedTake[0];
+				const y = sortedTake[1];
+				const level = sortedTake[2] >>> 0;
 
 				// insert(x + 1, y + 1, [x, y]);
 				if (x === end[0] && y === end[1]) {
