@@ -1,0 +1,161 @@
+<!--
+ * @Author: Devin
+ * @Date: 2021-01-13 21:30:09
+ * @LastEditTime: 2021-01-14 12:28:22
+ * @LastEditors: Devin
+ * @Description: 
+ * @email: das.devin@outlook.com
+-->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title></title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+	</head>
+	<body></body>
+	<script>
+		const regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\()|(\))|(\*)|(\/)|(\+)|(\-)/g;
+		const dictionary = ["Number", "Whitespace", "LineTerminator", "(", ")", "*", "/", "+", "-"];
+
+		function* tokenize(source) {
+			let reset = null;
+			while (true) {
+				let lastIndex = regexp.lastIndex;
+				result = regexp.exec(source);
+				if (!result) {
+					break;
+				}
+				if (regexp.lastIndex - lastIndex > result[0].length) {
+					break;
+				}
+
+				let token = {
+					type: null,
+					value: null,
+				};
+
+				for (let i = 1; i < dictionary.length; i++) {
+					if (result[i]) {
+						token.type = dictionary[i - 1];
+					}
+				}
+				token.value = result[0];
+				yield token;
+			}
+			yield {
+				type: "EOF",
+			};
+		}
+
+		function Expression(source) {
+			if ((source[0].type === "AdditiveExpression" || source[0].type === "MultiplicativeExpression") && source[1] && source[1].type === "EOF") {
+				let node = {
+					type: "Expression",
+					children: [source.shift(), source.shift()],
+				};
+				source.unshift(node);
+				return node;
+			}
+			AdditiveExpression(source);
+			return Expression(source);
+		}
+
+		function AdditiveExpression(source) {
+			if (source[0].type === "MutiplicateiveExpression") {
+				let node = {
+					type: "AdditiveExpression",
+					children: [source[0]],
+				};
+				source[0] = node;
+				return AdditiveExpression(source);
+			} else if (source[0].type === "AdditiveExpression" && source[1] && (source[1].value === "-" || source[1].value === "+")) {
+				let node = {
+					type: "AdditiveExpression",
+					children: [],
+					operator: source[1],
+				};
+				node.children.push(source.shift());
+				node.children.push(source.shift());
+				MutiplicateiveExpression(source);
+				node.children.push(source.shift());
+				source.unshift(node);
+				return AdditiveExpression(source);
+			} else if (source[0].type === "AdditiveExpression") {
+				return source;
+			}
+			MutiplicateiveExpression(source);
+			return AdditiveExpression(source);
+		}
+
+		function MutiplicateiveExpression(source) {
+			if (source[0].type === "Number" || source[0].type === "BracketsExpression") {
+				let node = {
+					type: "MutiplicateiveExpression",
+					children: [source[0]],
+				};
+				source[0] = node;
+				return MutiplicateiveExpression(source);
+			} else if (source[0].type === "MutiplicateiveExpression" && source[1] && (source[1].type === "/" || source[1].type === "*")) {
+				let node = {
+					type: "MutiplicateiveExpression",
+					children: [],
+					operator: source[1],
+				};
+				node.children.push(source.shift());
+				node.children.push(source.shift());
+				BracketsExpression(source);
+				node.children.push(source.shift());
+				source.unshift(node);
+				return MutiplicateiveExpression(source);
+			} else if (source[0].type === "MutiplicateiveExpression") {
+				return source[0];
+			}
+			BracketsExpression(source);
+			return MutiplicateiveExpression(source);
+		}
+
+		function BracketsExpression(source) {
+			if (source[0].type === "(") {
+				let node = {
+					type: "BracketsExpression",
+					children: [],
+					operator: "(",
+				};
+				source[0] = node;
+				return BracketsExpression(source);
+			} else if (source[0].type === "BracketsExpression" && source[1].type !== ")" && !source[0].eof) {
+				let node = {
+					type: "BracketsExpression",
+					children: [],
+					eof: false,
+				};
+				node.children.push(source.shift());
+				AdditiveExpression(source);
+				node.children.push(source.shift());
+				source.unshift(node);
+				return BracketsExpression(source);
+			} else if (source[0].type === "BracketsExpression" && source[1].type === ")" && !source[0].eof) {
+				let node = source.shift();
+				node.eof = true;
+				node.children.push(source.shift());
+				source.unshift(node);
+				return BracketsExpression(source);
+			} else if (source[0].type === "BracketsExpression") {
+				return source;
+			}
+			return source;
+		}
+
+		function execute(str) {
+			let source = [];
+
+			for (let token of tokenize(str)) {
+				if (token.type !== "LineTerminator" && token.type !== "Whitespace") {
+					source.push(token);
+				}
+			}
+			console.log(Expression(source));
+		}
+	</script>
+</html>
