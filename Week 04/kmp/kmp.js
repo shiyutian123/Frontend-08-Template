@@ -1,7 +1,7 @@
 /*
  * @Author: Devin
  * @Date: 2021-01-17 09:10:56
- * @LastEditTime: 2021-01-17 10:32:11
+ * @LastEditTime: 2021-01-17 10:50:39
  * @LastEditors: Devin
  * @Description:
  * @email: das.devin@outlook.com
@@ -61,4 +61,4 @@ function kmp(source, pattern) {
 	}
 }
 
-console.log(kmp("mississippi", "caabaaac"));
+console.log(kmp("mississippi", "issip"));
