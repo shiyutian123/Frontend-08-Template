@@ -1,0 +1,77 @@
+<!--
+ * @Author: Devin
+ * @Date: 2021-01-17 08:05:32
+ * @LastEditTime: 2021-01-17 08:51:24
+ * @LastEditors: Devin
+ * @Description: 
+ * @email: das.devin@outlook.com
+-->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+    
+    </body>
+    <script>
+        let $ = Symbol('$')
+        class Trie {
+            constructor() {
+                this.root = Object.create(null)
+            }
+
+            insertWord(word) {
+                let node = this.root;
+                for (let char of word) {
+                    if (!node[char]) {
+                        node[char] = Object.create(null)
+                    }
+                    node = node[char]
+                }
+                if (!node[$]) {
+                    node[$] = 0;
+                }
+                 node[$]++;
+            }
+
+            most() {
+                let max = 0;
+                let maxWord = "";
+                let visit = (node, word) => {
+                    if (node[$] && node[$] > max) {
+                        max = node[$]
+                        maxWord = word
+                    }
+                    for (let p in node) {
+                        visit(node[p], word + p);
+                    }
+                }
+
+                visit(this.root, "")
+
+                return {
+                    max: max,
+                    maxWord: maxWord
+                }
+            }
+        }
+
+        function randomWord(length) {
+            let word = ""
+            for (let i = 0; i < length; i++) {
+                word += String.fromCharCode(Math.random() * 26 + 'a'.charCodeAt(0))
+            }
+            return word
+        }
+
+        let trie = new Trie();
+
+        for (let i = 0; i < 100000; i++) {
+            trie.insertWord(randomWord(4))
+        }
+
+    </script>
+</html>
