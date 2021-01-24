@@ -1,7 +1,7 @@
 /*
  * @Author: Devin
  * @Date: 2021-01-17 09:10:56
- * @LastEditTime: 2021-01-17 12:33:32
+ * @LastEditTime: 2021-01-17 12:37:52
  * @LastEditors: Devin
  * @Description:
  * @email: das.devin@outlook.com
@@ -46,7 +46,6 @@ function kmpWildcard(source, pattern, singleWildcard = "?") {
 			if (
 				source[i] === pattern[j] ||
 				pattern[j] === singleWildcard
-				// && (!wildcardWord[j] || wildcardWord[j] === source[i])
 			) {
 				// wildcardWord[j] = source[i];
 				if (pattern[j] === singleWildcard) {

@@ -1,0 +1,77 @@
+<!--
+ * @Author: Devin
+ * @Date: 2021-01-24 23:02:52
+ * @LastEditTime: 2021-01-24 23:38:31
+ * @LastEditors: Devin
+ * @Description: 
+ * @email: das.devin@outlook.com
+-->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title></title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+	</head>
+	<body>
+		<div id="container">
+			刚刚，栖霞金矿事故救援第五批2名矿工升井！此前山东栖霞金矿事故救援中已有9名矿工升井，其中四中段1人、五中段8人。至此，已取得联系的11人全部成功升井。 接下来，会继续进行其他失联矿工搜救工作。
+			24日上午11:13许，经过不断搜寻，救援人员在4中段又发现一名被困矿工，身体极度虚弱。该矿工成功升井后，已被迅速送往医院救治。▲现场一名矿工成功升井。救援指挥部供图
+			13:30许，又有3人升井！栖霞金矿事故救援五中段3名矿工升井！ 14:07许，山东栖霞爆炸金矿事故救援现场，第三批3名被困矿工升井。
+		</div>
+		<div id="dragable" style="display:inline-block; width: 100px; height: 100px; background-color: gray"></div>
+	</body>
+	<script>
+		let dragable = document.getElementById("dragable");
+
+		let baseX = 0,
+			baseY = 0;
+		dragable.addEventListener("mousedown", (event) => {
+			let startX = event.clientX;
+			let startY = event.clientY;
+
+			const up = (event) => {
+				baseX = baseX + event.clientX - startX;
+				baseY = baseY + event.clientY - startY;
+				document.removeEventListener("mousemove", move);
+				document.removeEventListener("mouseup", up);
+			};
+
+			const move = (event) => {
+                let range = getNearest(event.clientX, event.clientY)
+                range.insertNode(dragable)
+				// dragable.style.transform = `translate(${baseX + event.clientX - startX}px, ${baseY + event.clientY - startY}px)`;
+			};
+
+			document.addEventListener("mousemove", move);
+			document.addEventListener("mouseup", up);
+        });
+        
+        let ranges = []
+        let container = document.getElementById("container");
+        for (let i = 0; i < container.childNodes[0].textContent.length; i++) {
+            let range = document.createRange()
+            range.setStart(container.childNodes[0], i)
+            range.setEnd(container.childNodes[0], i)
+            ranges.push(range)
+        }
+
+        function getNearest(x, y) {
+            let min = Number.MAX_VALUE
+            let nearest = null
+
+            for (let range of ranges) {
+                let rect = range.getBoundingClientRect()
+                let dis = (rect.x - x) ** 2 + (rect.y - y) ** 2
+                if (dis < min) {
+                    nearest = range
+                    min = dis
+                } 
+            }
+
+            return nearest
+        }
+
+        document.addEventListener('selectstart', event => event.preventDefault())
+	</script>
+</html>
