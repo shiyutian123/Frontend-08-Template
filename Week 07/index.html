@@ -1,0 +1,66 @@
+<!--
+ * @Author: Devin
+ * @Date: 2021-02-07 22:24:22
+ * @LastEditTime: 2021-02-07 22:44:18
+ * @LastEditors: Devin
+ * @Description: 
+ * @email: das.devin@outlook.com
+-->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<script src="https://gw.alipayobjects.com/os/lib/antv/g6/4.1.7/dist/g6.min.js"></script>
+		<style>
+			#mountNode {
+				width: 100vw;
+				height: 100vh;
+				border: 1px solid gray;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="mountNode"></div>
+	</body>
+	<script>
+		function renderG6(data) {
+			const treeGraph = new G6.TreeGraph({
+				container: "mountNode",
+				width: document.body.clientWidth,
+				height: document.body.clientHeight,
+				modes: {
+					default: ["collapse-expand", "drag-canvas", "zoom-canvas"],
+				},
+				layout: {
+					type: "compactBox",
+					direction: "LR",
+				},
+			});
+			treeGraph.data(data);
+			treeGraph.render();
+			treeGraph.fitView();
+		}
+
+		function getAllReleamObject() {
+      const releamObj = {}.__proto__
+			const names = Object.getOwnPropertyNames(releamObj);
+			return {
+				id: "$: Object",
+				label: "$: Object",
+				children: names.map(name => {
+          return {
+            	id: `$: ${name}`,
+              label: `$: ${name}`
+          }
+        }),
+			};
+		}
+
+		const objects = getAllReleamObject();
+		console.log(objects);
+		renderG6(objects);
+	</script>
+</html>
